@@ -1,0 +1,440 @@
+01.06.2025
+
+			
+			U(S)ART
+
+Universal (Synchronous)
+Asynchronous
+Receiver
+Transmitter
+
+
+
+
+------                  ------
+      |    			   |
+   Tx |- - - - - - - - | Rx
+	  |				   |
+   Rx |- - - - - - - - | Tx
+	  |	 			   |
+  GND |				   | GND
+	  |				   |
+------				    ------
+	A						B
+	
+	
+	
+ RS232
+				  Verici 	     	  Alıcı
+ Lojik 1 --> 	-5 ... -12V			-3 ... -1     Ters Gerilim
+ 
+ Lojik 0 -->    +5 ... +12V         +3 ... +12
+ 
+ 
+Görüldüğü üzere RS232 şartlarını sağlamak biraz zor
+
+
+ UART
+ 
+  Elektriksel olarak TTL lojik değerleri
+  
+  0 --> 0V
+  1 --> 3.3V / 5V
+  
+  
+  
+  Bu durumda MCU'nun UART çıkışını doğrudan RS232 ile çalışan
+  birime bağlamak mümkün olmuyor.
+  
+------                  ------
+      |    			   |
+   Tx |- - - - - - - - | Rx
+	  |				   |
+   Rx |- - - - - - - - | Tx
+	  |	 			   |
+  GND |				   | GND
+	  |				   |
+------				    ------
+  MCU						RS232 ile çalışan komponent
+  
+  illa bu bağlantıyı yapmak istersek araya
+  RS232 tranceiver kullanmak gerekiyor. (MAX232/MAX3232 vs)
+  
+  
+  
+ --------          ------------    
+|        |        |        ____| -		Bu iki ucun +- olarak    
+|     Tx |- - - - |Rx - -|>____| +      değişmesine farksal gerilim denir
+|	     |	      |   	       |
+|	     |        |        ____| -
+|     Rx |- - - - |Tx - -<|____| +
+|	     |	      |		       |  
+|    GND |		  |		       |  
+|        |		  |		       |  
+ --------		   ------------	
+   MCU              Tranceiver
+		      	   UART to RS422
+				   
+ Bu tür dönüştürücüler TTL lojik 1/0 olarak gelen gerilimi farksal gerilim
+ halinde çeviriyor. 
+ Bundan dolayı ~1000m ye kadar telli iletişim mümkün oluyor. Tabi bunun karşı taraftda 
+ bir dönüştürücü olur R422 yi UART a çevirmeli.
+ 
+ 
+ RS422 ile RS485 Farkı
+ 
+ RS422 --> Simplex bağlantı.
+ Sadece iki nokta birbirine bağlanır
+ 
+ RS485 --> Bus Tophology ile çalışır.
+ Yani birden fazla birim aynı hatta bağlanabilir 
+ 
+ 
+ 
+ UART to UART 
+ maks 5 metre 
+ yüksek hıza çıkmamak koşuluyla
+ 
+  
+------                  ------------ 
+      |    			   |			|
+   Tx |- - - - - - - - | Rx 		|
+	  |				   |         	|-
+   Rx |- - - - - - - - | Tx		USB	|-         PC
+	  |	 			   |			|-      
+  GND |				   | GND		|
+	  |				   |			|
+------				    ------------
+ MCU					UART to USB
+						  FT232 
+						  
+MCU tarafından bakınca UART to UART fiziksel bağlantı var
+
+						  
+
+RS232 ile RS232 bağlanırsa						  
+						  
+------             				      ------
+      |    						     |
+   Tx |  			RS232			     | Rx
+	  |				                 |
+   Rx | - - MAX232- - - - MAX232- -  | Tx
+	  |	 			                 |
+  GND |                              | GND
+	  |				                 |
+------				                  ------						  
+ MCU								    MCU
+ 
+ Böyle bir durumda 20m makul bir aralık
+ 
+ 
+ Aynı şeyi RS485 ile yapacak olsak:
+  
+------             				      ------
+      |    						     |
+   Tx |  			RS485		     | Rx
+	  |				                 |
+   Rx | - - MAX485- - - - MAX485- -  | Tx
+	  |	 			                 |
+  GND |                              | GND
+	  |				                 |
+------				                  ------						  
+ MCU								    MCU
+ 
+ Belki 1000 metreye kadar haberleşme sağlanabilir
+ Çok yüksek hızlara çıkmamak ve kaliteli kablo kullanmak kaydıyla
+  
+ 
+ 
+ 
+ UART Haberleşmesine geri dönelim
+ 
+	UART
+	
+ 1- Asenkron: Ortak saat yok, taraflar kendi saatlerini kullanırlar
+	CLK hattı yok.
+
+ 2-  Seri olması
+     LSB (Least Significant Bit) düşük anlamlı bit önce gönderilir (en sağdaki bit)
+
+ 3- Full dublex
+    Gönderme ve alma hatları ayrı ayrı ve çapraz bağlanıyor karşı taraf ile
+
+ NOT: Eğer USART haberleşmesi yapsaydık Tx ile TX i ve Rx ile Rx i bağlayacaktık
+ bu hatların biri DATA (Rx) diğeri ile CLK(Tx) hattı olacaktı. 
+ 
+ 
+  Framing of UART
+  
+  Iddle : hiç bir işlem yapılmadıgı zaman ki durum
+  
+  Veriler 8-bit 
+  ya da 8-bit + parity  olarak gönderilir
+  
+ 
+  |idle
+  |_____       _____
+  |	    |     |     |            |
+  |     |__T__|     |__T___ ...  |
+   ----------------------------------->
+   
+    ilk 0'a çekme start manasına geliyor
+	son 1'e çekme de stop oluyor
+	bundan dolayı min frame 10-bit olur.
+	
+	Start bit --> başlangıç
+	Stop bit --> bitiş aynı zamanda ayıraç
+	
+	Burda frekans (bir bitin gönderilme süresi için) şöyle hesaplanır:
+	
+	f.T = 1 
+	mesela frekans 9600 bps ise T süresi 1/9600s
+	
+	Tarafların baudrate süreleri, frekansları aynı olmalı aksi halde haberleşmede sorun çıkar
+	
+	T = 1 bit gönderim zamanı
+	
+	Stop bitinin (1'e çekme) illa bir bit 1 olması şart değil
+    daha uzun süre de o pozisyonda kalabilir.
+
+	UART Receiver (Alıcı) kısmı over sampling matıgıyla çalışır
+	yani okuyacagı bitin tam orta noktasından, biraz gerisinden, biraz ilerisinden
+	okuma yapar
+	
+	000 --> 0
+	111 --> 1
+	011 --> 1 ama gürültü var (noise error)
+	101 --> 1 ama gürültü var
+	001 --> 0 ama gürültü var
+	
+	görüldüğü üzere over sampling olayının asıl amacı gürültüden sebep
+	yanlış okumanın önüne geçilmesidir.
+	
+	
+	
+	İsteğe bağlı olarak bazen parity bit kullanılabiliyor bu durumda
+	
+	start bit + 8 bit data + 1 bit parity + stop biti
+	
+	11 bit haline gelmiş oluyor bir frame
+	
+	Parity bit bir hata kontrol yöntemi eski bir yöntem şu an pek kullanılmıyor:
+	Even Parity ya da Odd Parity olabilir ekleyeceğimiz son bit
+	Eğer even parity ise data da ki toplam 1 sayısı çift olacak şekilde 1 ya da 0 eklenir
+	
+	10110001 ise ilgili data, burdaki 1 lerin sayısı zaten çift oldugu için
+	parity bit olarak 0 eklenir 
+	101100010 olur
+	
+	11101111 ise ilgili data, burdaki 1 lerin sayısı tek oldugu için
+	sayıyı çifte ulaştırmak adına parity bit olarak 1 eklenir
+	111011111 olur 
+	
+	Odd parity ise aynı mantıgın tek sayıyı tutturmak için yapılmış olanı
+	
+	Parity + 2 stop biti kullanırsak
+	1+8+1+2   bu durumda frame uzunluğu 12 bite çıktı
+	
+	Diyelim ki 1001 1000 1 ifadesi ni gönderdin (even parity)
+	ama herhangi bir bit gönderim esnasında bozuldu
+	parity error hatası alırsın (parity biti uyumsuz/bozuk veri)
+	
+	Burda şöyle bir zaafiyet var
+	
+	1110 1111 1 gönderdin karşıya ama iki tane 1 bozuldu ve 0 olarak karşıya gitti
+	receiver tarafında karşıdan gelen yine çift sayıda 1 oldugu için sorun yokmuş gibi duruyor
+	ve bozulmayı tespit edemiyor
+	
+	
+	Parity Neden Tercih Edilmiyor ?
+	
+	1- Hata yakalam oranı düşük, hatalı veriyi kaçırabilir
+	Halbuki bu konuda daha yetenekli algoritmalar var CRC gibi
+	
+	2- Veri maliyeti yüksek
+	Her 8 bit başına 1 bit
+	
+	
+	
+	Baudrate değerleri farklı olursa ne olur (Tx ve Rx için)?
+	
+	Baud rate = saniyedeki sembol sayısı
+	UART için genellikle 1 sembol = 1 bit, yani:
+	9600 baud --> saniyede 9600 bit gönderilir.
+	
+	Eğer gönderici (Tx) ve alıcı (Rx) aynı hızda çalışmazsa; 
+	bitlerin süreleri farklı yorumlanır.
+	Özellikle küçük farklarda (%2-%3) ilk bir kaç bayt doğru yakalanabilir
+	ama zamanla hata birikir
+	- bit kayması
+	- yanlış bit okuma
+	- framing error
+	 
+	 Neden?
+	 UART protokolünde ortak bir saat işareti yok. Yani:
+	 Alıcı, gelen veri hattını (Rx) izleyip kendi saatini start bitine göre ayarlar.
+	 Bundan sebep:
+	 Eğer hızlar uyumlu değilse, alıcı bit aralıkları yanlış hesaplanır.
+	 İlk 1-2 bit'te sorun çıkmasa da, birkaç byte sonra yanlış zamanlama, hatalı veri ve framing error oluşur.
+	 
+	 Ne Kadar Fark Tolere Edilir?
+	 Bu hem alıcı hem de vericinin kristal osilatörlerinin hassasiyetine bağlıdır.
+	 Genel olarak ~%3'e kadar sorun yaşanmaz ama fark arttıkça veri kaybı başlar.
+	 Hız arttıkça hassasiyet artar yani %3 sapma bile sorun olabilir.
+	 
+	 İşareti Bozan Faktörler
+	 
+	 - Hattın empedansı (hat kapasitesi)
+	   Kablo uzunluğu ile doğru orantılıdır. Mesafe arttıkça işaret bozulmaya başlar.
+	 - İletişim hızı  
+	   Frekans arttıkça kapasitenin etkisi artacak.
+	   
+	   
+	Göndereceğin veri TDR (Transmit Data Register) kısmına yazılır (bekleme odası)
+    ardından TSR (Transmit Shift Register) a aktarılır ve ordan LSB den başlamak üzere bit bit gönderilir.
+    
+	TDR --> Bekleyen veri
+	TSR --> Şu an hatta çıkan veri
+	
+	Neden doğrudan TSR kısmına yazılmıyor? TDR neden var	
+	Çünkü böylelikle TSR üzerinden veriyi gönderirken bir yandan da TDR kısmında daha sonra göndereceğin veriyi tutabiliyorsun
+	Bu buffer'ların kapasitesi 1 byte kadardır.
+	
+	Receiver (Alma) kısmında ise;
+	Gelen veri önce RSR (Receiver Shift Register) kısmına yazılır 
+	ardından RDR (Receiver Data Register) kısmına yazılır
+	
+	RSR --> Şu an alınmakta olan veri
+	RDR --> Okunmaya hazır veri
+	
+	RDR zamanında okunmazsa ve yeni veri gelirse → overrun error olur. 
+	Overrun Error (OVR veya ORE) bir taşma hatasıdır.
+	 
+
+	 
+	 Gönderme Stratejileri
+	 _____________________
+	|					  |
+	|_____________________|   TDR
+	
+     
+	 _____________________
+	|					  |
+	|_____________________|   TSR
+	
+	
+	TDR boş ise:
+	TXE (Transmit Data Register Empty) biti 1 olur
+	TXE (bit 7) = 1 ise TDR boş, yeni veri yazılabilir
+	TXE (bit 7) = 0 ise TDR dolu, önceki veri henüz gönderim hattına alınmamış deemektir.
+	
+	TSR boşsa:
+	TC (Transmission Complete) bayrağı 1 olur
+	TXE zaten önceden 1 olmuş olur, çünkü TDR zaten boştur.
+	
+	Kritik fark:
+	TXE = 1 demek: TDR'a yeni veri yazılabilir.
+	TC = 1 demek: hem TDR, hem TSR boştur - son bit fiziksel olarak gönderilmiştir demek.
+	
+	Şimdilik 2 farklı stratejiyi ele alalım daha sonrasında kesmeler ve DMA da işin içine katılacak
+	
+	1-   Sadece TXE'nin durumu kontrol edilir < TDR boş mu değil mi? >
+	
+		 |--> (TXE == 1 mi?) ----------- 
+		 |								|
+		 |		|Hayır					|Evet
+	     |------|						|
+		 
+									TDR'a veriyi yükle
+									
+									
+	2 -    Herhangi bir şeyi sorgulamdan veriyi TDR'a yükle
+           Daha sonrasında TSR boş mu diye sorgula
+
+				
+					TDR = datayı yükle
+					       |
+						   |
+						   |
+			   --> 	Veri gönderildi mi? --------  Evet
+			  |			TC == 1 				|
+			  | 		   |					|
+			  |			   | 					|
+			  |			   | Hayır				|
+			   ------------
+			   
+		
+	Bu iki strateji de DMA ya da kesme kullanılmadan kurgulanan stratejilerdi.
+
+									- - -
+									
+									
+	Ortaya çıkabilecek hata türleri
+	
+	- Noise error (NE)
+	  Hattaki elektromanyetik parazit ya da glitch sebebiyle 
+	  sampling sırasında kararsız seviyeler algılanır. 
+	  
+	- Framing error (FE)
+	  Baudrate hatalarında ortaya çıkabilir, 
+	  verinin yolda bozulması durumunda ortaya çıkabilir.
+	  
+	  UART/USART bir karakteri şu şekilde çerceveler
+	  [Start Bit (0)] [Data Bits] [Optional Parity] [Stop Bit (1)]
+      Veri alınırken beklenen stop biti (1) görülmezse FE hatası olur --> FE = 1.
+	  
+	- Parity error (PE)
+	  Parity biti (even/odd) hesaplanan değerden farklıysa --> PE = 1.
+	  
+	- Overrun error (ORE)
+      MCU, bir baytı RDR'den okuyamadan yeni bir bayt gelirse, mevcut veri kaybolur --> ORE = 1.
+	  
+	  
+	  
+	  
+	 
+	 Hardware Flow Control 	- RM0399 sayfa 2237 -
+	 
+	 Bir tarafın diğer tarafa veri gönderirken 
+	 karşı tarafın hazır olup olmamasının kontrolünü donanımsal olarak sağlar.
+	 
+	 Akış kontrolünü donanımsal olarak yapacaksak fazladan 2 adet uç gerekir
+	 ayrıca karşı tarafında bu donanımsal özelliği destekliyor olması lazım.
+	 
+	 ------             				      ------
+		   |  						  	     |
+   Tx 	   |  Tx   ----------------->	  Rx |  Rx
+   Circuit |  CTS  <-----------------	  RTS|  Circuit
+           |							     | 
+	       |	 			                 |
+		   |                                 | 
+   Rx      |  Rx   <----------------	  Tx |  Tx
+   Circuit |  RTS  ----------------->	 CTS |  Circuit
+		   |								 |
+     ------				                      ------						  
+    MCU 										Alıcı
+	 
+	UART üzerinden veri iletimini kontrol etmek için ekstra sinyal hatları kullanarak, 
+    veri taşması (overrun) ve kaybı önlemeye yönelik bir mekanizmadır.
+
+	RTS (Request To Send) ve CTS (Clear To Send) pinleri ile sağlanır
+	
+	RST (Output) 
+	MCU, veri almaya hazırsa, RTS pinini low yapar
+	Karşı taraf, bu pin low iken veri gönderebilir
+	MCU'nun RX buffer'ı doluyken kendini korumak için kullanılır
+	
+	CTS (Input)  
+	Karşı taraf veri almaya hazırsa, CTS pinini low yapar
+	MCU, CTS low iken alıcıya veri gönderebilir, high iken gönderemez
+	MCU'nun Tx çıkışı CTS pinine bağlı sinyale göre kontrol edilir.
+	
+	
+	
+	Bütün Reset Clock Control (RCC) tanımlamaları stm32xx_rcc.h dosyasının içinde
+	
+	
+	Hangi ucun nasıl yapılandırılacağı Reference Manual içinde (GPIOs and AFIOs) yazar.
+	
+	
+	
