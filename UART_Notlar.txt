@@ -336,7 +336,8 @@ RS232 ile RS232 bağlanırsa
 	TXE = 1 demek: TDR'a yeni veri yazılabilir.
 	TC = 1 demek: hem TDR, hem TSR boştur - son bit fiziksel olarak gönderilmiştir demek.
 	
-	Şimdilik 2 farklı stratejiyi ele alalım daha sonrasında kesmeler ve DMA da işin içine katılacak
+	Şimdilik 2 farklı stratejiyi ele alalım daha sonrasında kesmeler ve DMA da işin içine 
+        katılacak
 	
 	1-   Sadece TXE'nin durumu kontrol edilir < TDR boş mu değil mi? >
 	
@@ -435,8 +436,63 @@ RS232 ile RS232 bağlanırsa
 	
 	Hangi ucun nasıl yapılandırılacağı Reference Manual içinde (GPIOs and AFIOs) yazar.
 
+	STM32xx_USART.h dosyasını iyi incele. Initialize işlemleri için faydalı olacaktır.
 
+
+	Receive Data Register Not Empty (RXNE) Flag
+        Bu bayrak UART'ın veri alım register'i (RDR) içinde okunmayı bekleyen bir bayt olup olmadıgını 
+        gösterir.
+	Dikkat: Not empty demek RDR registeri full doludur manasına gelmez. Sadece boş olmadıgını içerde 
+        veri oldugunu belirtir.
 
 	
+
+	17. video
+
+ 	HyperTerminal uygulamasının ayarlarını anlattı...
+	Terminal ekranın çok sık FF,  0xFF  görünüyorsa bilki hatta parazit var ve bu parazitlik durumu 
+        noise error'a da takılmayabilir.
+
+
+	Veriyi almadan önce hatayı kontrol etmemiz lazım çünkü veriyi okursak bazı hata bitleri sıfırlanıyor.
+	Diyelim ki overrun_error hatası var, veriyi okudugun zaman buffer temizlendiği için bu hata biti de 
+ 	silinmiş oluyor.
+
+ 	İlk etapta tüm potansiyel hataları | ifadesi ile kontrol et. Eğer hata çıkarsa tek tek kontrol edip 
+ 	hatanın nerede oldugunu anlarsın. Optimizasyon açısından çok daha verimli aksi halde hata olsun 
+        olmasın 5 tane fonksiyoun çağıracaktın sürekli
+
+int UART_Recv(UART_PERIPH idx)
+{
+	int ret;
+	USART_TypeDef *pUART = _uCfg[idx].pUSART;
+	while (!UART_DataReady(idx));					// Veri olmadığı müddetçe fonksiyon 									   bloke olur
+
+	if (USART_GetFlagStatus(pUART, USART_FLAG_ORE | USART_FLAG_NE 
+				| USART_FLAG_FE | USART_FLAG_PE ));      // Veriyi okumadan hata var mı diye 										hızlıca kontrol et
+	
+	// eğer hata varsa hatanın tam olarak ne oldugunu tespit et
+	{
+	  if (USART_GetFlagStatus(pUART, USART_FLAG_NE))
+		  ret = UART_ERR_NOISE;
+	  else if (USART_GetFlagStatus(pUART, USART_FLAG_ORE))
+		  ret = UART_ERR_OVERRUN;	
+	  else if (USART_GetFlagStatus(pUART, USART_FLAG_FE))
+		  ret = UART_ERR_FRAMING;
+	  else if (USART_GetFlagStatus(pUART, USART_FLAG_PE))
+		  ret = UART_ERR_PARITY;
+
+	  USART_ReceiveData(pUART);	----> dummy okuma nedeni aşağıda yazıyor
+	}
+	else
+	 ret = USART_ReceiveData(pUART);
+	 return ret;
+}
+
+
+
+485. satır için: burdaki amaç statu registerindeki hata bitini sıfırlamaktır eğer böyle bir dummy okuma yapıp hatalı biti sıfırlamazsak bir sonraki gelen veri temiz bile olsa hatalı gözükür çünkü öncesinde temizleme işlemi yapılmadı
+
+       
 	
 	
