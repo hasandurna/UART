@@ -12,21 +12,21 @@ Transmitter
 
 
 ------                  ------
-      |    			   |
+      |    	       |
    Tx |- - - - - - - - | Rx
-	  |				   |
+      |	       	       |
    Rx |- - - - - - - - | Tx
-	  |	 			   |
-  GND |				   | GND
-	  |				   |
-------				    ------
-	A						B
+      |	     	       |
+  GND |		       | GND
+      |		       |
+------			 ------
+A			   B
 	
 	
 	
  RS232
-				  Verici 	     	  Alıcı
- Lojik 1 --> 	-5 ... -12V			-3 ... -1     Ters Gerilim
+		 Verici 	     	  Alıcı
+ Lojik 1 --> 	-5 ... -12V	    -3 ... -1     Ters Gerilim
  
  Lojik 0 -->    +5 ... +12V         +3 ... +12
  
@@ -47,15 +47,15 @@ Görüldüğü üzere RS232 şartlarını sağlamak biraz zor
   birime bağlamak mümkün olmuyor.
   
 ------                  ------
-      |    			   |
+      |    	       |
    Tx |- - - - - - - - | Rx
-	  |				   |
+      |		       |
    Rx |- - - - - - - - | Tx
-	  |	 			   |
-  GND |				   | GND
-	  |				   |
-------				    ------
-  MCU						RS232 ile çalışan komponent
+      |	       	       |
+  GND |		       | GND
+      |		       |
+------			------
+  MCU			RS232 ile çalışan komponent
   
   illa bu bağlantıyı yapmak istersek araya
   RS232 tranceiver kullanmak gerekiyor. (MAX232/MAX3232 vs)
@@ -63,17 +63,17 @@ Görüldüğü üzere RS232 şartlarını sağlamak biraz zor
   
   
  --------          ------------    
-|        |        |        ____| -		Bu iki ucun +- olarak    
+|        |        |        ____| -	Bu iki ucun +- olarak    
 |     Tx |- - - - |Rx - -|>____| +      değişmesine farksal gerilim denir
-|	     |	      |   	       |
-|	     |        |        ____| -
+|	 |	  |   	       |
+|	 |        |        ____| -
 |     Rx |- - - - |Tx - -<|____| +
-|	     |	      |		       |  
-|    GND |		  |		       |  
-|        |		  |		       |  
- --------		   ------------	
+|	 |	  |	       |  
+|    GND |        |	       |  
+|        |	  |	       |  
+ --------	   ------------	
    MCU              Tranceiver
-		      	   UART to RS422
+	UART to RS422
 				   
  Bu tür dönüştürücüler TTL lojik 1/0 olarak gelen gerilimi farksal gerilim
  halinde çeviriyor. 
@@ -96,17 +96,17 @@ Görüldüğü üzere RS232 şartlarını sağlamak biraz zor
  yüksek hıza çıkmamak koşuluyla
  
   
-------                  ------------ 
-      |    			   |			|
-   Tx |- - - - - - - - | Rx 		|
-	  |				   |         	|-
-   Rx |- - - - - - - - | Tx		USB	|-         PC
-	  |	 			   |			|-      
-  GND |				   | GND		|
-	  |				   |			|
-------				    ------------
- MCU					UART to USB
-						  FT232 
+------                    ------------ 
+      |    	       |	       |
+   Tx |- - - - - - - - | Rx 	       |
+      |		       |               |-
+   Rx |- - - - - - - - | Tx	   USB |-  PC
+      |	 	       |	       |-      
+  GND |		       | GND	       |
+      |		       |	       |
+------			 ------------
+ MCU			    UART to USB
+			      FT232 
 						  
 MCU tarafından bakınca UART to UART fiziksel bağlantı var
 
@@ -114,32 +114,32 @@ MCU tarafından bakınca UART to UART fiziksel bağlantı var
 
 RS232 ile RS232 bağlanırsa						  
 						  
-------             				      ------
-      |    						     |
-   Tx |  			RS232			     | Rx
-	  |				                 |
-   Rx | - - MAX232- - - - MAX232- -  | Tx
-	  |	 			                 |
-  GND |                              | GND
-	  |				                 |
+------             				   ------
+      |    				         |
+   Tx |  	         RS232		         | Rx
+      |				                 |
+   Rx |      - - MAX232- - - - MAX232- -         | Tx
+      |	 			                 |
+  GND |                                          | GND
+      |				                 |
 ------				                  ------						  
- MCU								    MCU
+ MCU						    MCU
  
  Böyle bir durumda 20m makul bir aralık
  
  
  Aynı şeyi RS485 ile yapacak olsak:
   
-------             				      ------
-      |    						     |
-   Tx |  			RS485		     | Rx
-	  |				                 |
-   Rx | - - MAX485- - - - MAX485- -  | Tx
-	  |	 			                 |
-  GND |                              | GND
-	  |				                 |
+------             				  ------
+      |    				         |
+   Tx |  	    RS485	         	 | Rx
+      |				                 |
+   Rx |      - - MAX485- - - - MAX485- -         | Tx
+      |	 			                 |
+  GND |                                          | GND
+      |				                 |
 ------				                  ------						  
- MCU								    MCU
+ MCU						    MCU
  
  Belki 1000 metreye kadar haberleşme sağlanabilir
  Çok yüksek hızlara çıkmamak ve kaliteli kablo kullanmak kaydıyla
@@ -174,7 +174,7 @@ RS232 ile RS232 bağlanırsa
  
   |idle
   |_____       _____
-  |	    |     |     |            |
+  |	|     |     |            |
   |     |__T__|     |__T___ ...  |
    ----------------------------------->
    
@@ -314,12 +314,12 @@ RS232 ile RS232 bağlanırsa
 	 
 	 Gönderme Stratejileri
 	 _____________________
-	|					  |
+	|		      |
 	|_____________________|   TDR
 	
      
 	 _____________________
-	|					  |
+	|		      |
 	|_____________________|   TSR
 	
 	
@@ -340,12 +340,11 @@ RS232 ile RS232 bağlanırsa
 	
 	1-   Sadece TXE'nin durumu kontrol edilir < TDR boş mu değil mi? >
 	
-		 |--> (TXE == 1 mi?) ----------- 
-		 |								|
-		 |		|Hayır					|Evet
-	     |------|						|
-		 
-									TDR'a veriyi yükle
+		 |--> (TXE == 1 mi?) ------------------- 
+		 |					|
+		 |	|Hayır				|Evet
+	         |------|				|
+							TDR'a veriyi yükle
 									
 									
 	2 -    Herhangi bir şeyi sorgulamdan veriyi TDR'a yükle
@@ -353,15 +352,15 @@ RS232 ile RS232 bağlanırsa
 
 				
 					TDR = datayı yükle
-					       |
+					           |
 						   |
 						   |
-			   --> 	Veri gönderildi mi? --------  Evet
+			    --> 	Veri gönderildi mi? --------  Evet--------------
 			  |			TC == 1 				|
-			  | 		   |					|
+			  | 		           |					|
 			  |			   | 					|
 			  |			   | Hayır				|
-			   ------------
+			   -----------------------
 			   
 		
 	Bu iki strateji de DMA ya da kesme kullanılmadan kurgulanan stratejilerdi.
@@ -401,18 +400,18 @@ RS232 ile RS232 bağlanırsa
 	 Akış kontrolünü donanımsal olarak yapacaksak fazladan 2 adet uç gerekir
 	 ayrıca karşı tarafında bu donanımsal özelliği destekliyor olması lazım.
 	 
-	 ------             				      ------
-		   |  						  	     |
-   Tx 	   |  Tx   ----------------->	  Rx |  Rx
-   Circuit |  CTS  <-----------------	  RTS|  Circuit
-           |							     | 
-	       |	 			                 |
-		   |                                 | 
-   Rx      |  Rx   <----------------	  Tx |  Tx
-   Circuit |  RTS  ----------------->	 CTS |  Circuit
-		   |								 |
-     ------				                      ------						  
-    MCU 										Alıcı
+       --------             			      --------
+	       |  				     |
+  	 Tx    |  Tx   ----------------->	  Rx |  Rx
+       Circuit |  CTS  <-----------------	  RTS|  Circuit
+               |				     | 
+	       |	 			     |
+	       |                                     | 
+   Rx          |  Rx   <----------------	  Tx |  Tx
+       Circuit |  RTS  ----------------->	 CTS |  Circuit
+	       |				     |
+      --------				               --------						  
+        MCU 						Alıcı
 	 
 	UART üzerinden veri iletimini kontrol etmek için ekstra sinyal hatları kullanarak, 
     veri taşması (overrun) ve kaybı önlemeye yönelik bir mekanizmadır.
@@ -435,6 +434,9 @@ RS232 ile RS232 bağlanırsa
 	
 	
 	Hangi ucun nasıl yapılandırılacağı Reference Manual içinde (GPIOs and AFIOs) yazar.
+
+
+
 	
 	
 	
