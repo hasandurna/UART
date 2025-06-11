@@ -23,6 +23,7 @@ void UART_Send(UART_PERIPH idx, unsigned char val);
 
 int UART_DataReady(UART_PERIPH idx);
 int UART_Recv(UART_PERIPH idx);
+int UART_puts(UART_PERIPH idx, const char *str)
 
 
 #ifdef __cplusplus
