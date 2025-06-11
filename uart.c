@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <stdarg.h>
+
 #include "io.h"
 #include "system.h"
 #include "uart.h"
@@ -133,6 +136,18 @@ void UART_putch(UART_PERIPH idx, unsigned char c)
 
 
 	// UART_Send yazan kısmı UART_Send2 yazarsan 2. stratejinin çalışam mantığını gözlemleyebilirsin
+}
+
+
+// str'deki stringi idx olarak belirtilen UART'a gönderir
+// geri dönüş değeri: yazılan karakter sayısı
+int UART_puts(UART_PERIPH idx, const char *str)
+{
+	int i = 0;
+	while (str[i])
+	  UART_putch(idx, str[i++]);
+	
+	return i;
 }
 
  
