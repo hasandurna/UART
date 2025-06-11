@@ -33,7 +33,7 @@ void Task_Print(void)
 int main()
 {
 
-  int c;
+int c; 
   
 // Çalışma zamanı yapılandırmaları
 init();
@@ -41,6 +41,11 @@ init();
 printf("Merhaba\n");
   
 // Görev çevrimi
+
+
+
+UART_puts(UART_1, "\n\nMerhaba Dunya!\n");
+
   
  // Bloke olmayan echo örneği (veri almadığı sürece)
   
@@ -49,11 +54,10 @@ printf("Merhaba\n");
   if (UART_DataReady(UART_1))  {
     c = UART_Recv(UART_1);
     if (c < 0)                     // hata var mı diye kontrol edelim 
-      printf("\nHATA: %\n", c);
+      printf("\rHATA: %d\n", c);
     else
-      printf("\n%c\n", c);
-  }                    
-    
+      printf("\r%c\n", c);
+  }                     
 } 
   
 // return 0;
